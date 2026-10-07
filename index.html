@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚔️ Dungeon Loot Quest — Інтерактивна лабораторія</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111726;
+      --card-border: #1e293b;
+      --card-hover: #162033;
+      --primary: #f59e0b;
+      --primary-glow: rgba(245, 158, 11, 0.25);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.2);
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.2);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #8b5cf6;
+      --font-body: 'Inter', -apple-system, sans-serif;
+      --font-heading: 'Cinzel', serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      line-height: 1.5;
+      background-image: 
+        radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.12) 0%, transparent 60%),
+        radial-gradient(circle at 100% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 0% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 40%);
+      background-attachment: fixed;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 20px 80px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 28px;
+    }
+
+    .title-group h1 {
+      font-family: var(--font-heading);
+      font-size: 28px;
+      letter-spacing: 0.5px;
+      color: #fef08a;
+      text-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+    }
+    .badge-gold {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fef08a;
+    }
+
+    /* Progress Banner */
+    .progress-banner {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+    }
+
+    .progress-bar-bg {
+      height: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f59e0b, #10b981);
+      border-radius: 999px;
+      transition: width 0.5s ease-out;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+    }
+
+    /* Grid Layout */
+    .quest-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 960px) {
+      .quest-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Simulator Styles */
+    .sim-block {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .sim-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .sim-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .form-row:last-child {
+      margin-bottom: 0;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      margin: 0 12px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .btn-group {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .weapon-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      border-radius: 8px;
+      padding: 8px 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .weapon-btn.active {
+      background: var(--primary-glow);
+      border-color: var(--primary);
+      color: #fef08a;
+    }
+
+    .action-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #d97706, #b45309);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+    }
+
+    .action-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(217, 119, 6, 0.35);
+    }
+
+    .sim-result {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sim-result.pass {
+      background: var(--success-glow);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+
+    .sim-result.fail {
+      background: var(--danger-glow);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    /* Health Bar */
+    .health-bar-container {
+      height: 14px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 10px 0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .health-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: #10b981;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    }
+
+    /* Test List */
+    .tests-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .btn-run-all {
+      background: linear-gradient(135deg, #059669, #047857);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+    }
+
+    .btn-run-all:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(5, 150, 105, 0.4);
+    }
+
+    .test-item {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+    }
+
+    .test-item.passed {
+      border-left: 4px solid var(--success);
+      background: rgba(16, 185, 129, 0.04);
+    }
+
+    .test-item.failed {
+      border-left: 4px solid var(--danger);
+      background: rgba(239, 68, 68, 0.04);
+    }
+
+    .test-title {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .test-diff {
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .test-diff span {
+      display: flex;
+      gap: 8px;
+    }
+
+    .diff-exp {
+      color: #6ee7b7;
+    }
+
+    .diff-rec {
+      color: #fca5a5;
+    }
+
+    /* Victory & Submit Modal / Banner */
+    .submit-card {
+      margin-top: 28px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(15, 23, 42, 0.9));
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 16px;
+      padding: 24px;
+      display: none;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .submit-card.visible {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .code-box {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: #93c5fd;
+      position: relative;
+      margin: 12px 0;
+      overflow-x: auto;
+    }
+
+    .btn-copy {
+      position: absolute;
+      right: 8px;
+      top: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .btn-copy:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title-group">
+        <h1>⚔️ Dungeon Loot Quest</h1>
+        <div class="subtitle">Практична місія з JavaScript: Логічні та умовні оператори (11 клас)</div>
+      </div>
+      <div class="header-badges">
+        <span class="badge badge-gold">🏆 13 Тестів</span>
+        <span class="badge">📂 templates/dungeon-quest/src/quest.js</span>
+      </div>
+    </header>
+
+    <!-- Progress Banner -->
+    <div class="progress-banner">
+      <div class="progress-header">
+        <span id="progress-text">📊 Перевірка автотестів: 0 з 13 пройдено</span>
+        <span id="progress-percent" style="color: var(--primary);">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div id="progress-bar-fill" class="progress-bar-fill"></div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="quest-grid">
+      <!-- Left: Interactive Visual Simulator -->
+      <div class="card">
+        <h2>🎮 Інтерактивний бойовий симулятор</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+          Перевіряйте роботу ваших функцій наживо перед тим, як здавати роботу.
+        </p>
+
+        <!-- 1. Chest Simulator -->
+        <div class="sim-block">
+          <div class="sim-title">
+            <span>🗝️ Скриня з пасткою (canOpenChest)</span>
+          </div>
+          <div class="form-row">
+            <span>Пастка знешкоджена (isTrapDisarmed):</span>
+            <input type="checkbox" id="sim-trap" checked />
+          </div>
+          <div class="form-row">
+            <span>Є магічний ключ (hasKey):</span>
+            <input type="checkbox" id="sim-key" />
+          </div>
+          <div class="form-row">
+            <span>Рівень злому (lockpickLevel): <strong id="lockpick-val">65</strong></span>
+            <input type="range" id="sim-lockpick" min="0" max="100" value="65" />
+          </div>
+          <button class="action-btn" id="btn-test-chest">Спробувати відкрити скриню</button>
+          <div class="sim-result" id="res-chest">Натисніть кнопку вище для перевірки</div>
+        </div>
+
+        <!-- 2. Damage Simulator -->
+        <div class="sim-block">
+          <div class="sim-title">
+            <span>⚔️ Розрахунок шкоди (calculateDamage)</span>
+          </div>
+          <div class="form-row">
+            <span>Базова атака:</span>
+            <input type="number" id="sim-attack" value="50" style="background:#020617; border:1px solid #334155; color:white; padding:4px 8px; border-radius:6px; width:70px; text-align:right;" />
+          </div>
+          <div class="btn-group">
+            <button class="weapon-btn active" data-weapon="sword">🗡️ Меч (1.0x)</button>
+            <button class="weapon-btn" data-weapon="bow">🏹 Лук (1.2x)</button>
+            <button class="weapon-btn" data-weapon="staff">🔮 Посох (1.5x)</button>
+            <button class="weapon-btn" data-weapon="fist">👊 Інше (0.5x)</button>
+          </div>
+          <div class="form-row">
+            <span>Критичний удар (isCrit):</span>
+            <input type="checkbox" id="sim-crit" />
+          </div>
+          <button class="action-btn" id="btn-test-damage">Розрахувати атаку</button>
+          <div class="sim-result" id="res-damage">Натисніть кнопку для розрахунку</div>
+        </div>
+
+        <!-- 3. Health Simulator -->
+        <div class="sim-block">
+          <div class="sim-title">
+            <span>❤️ Стан здоров'я (getHeroStatus)</span>
+            <span id="hero-status-badge" class="badge">Невідомо</span>
+          </div>
+          <div class="form-row">
+            <span>Поточне HP: <strong id="hp-val">80 / 100</strong></span>
+            <input type="range" id="sim-hp" min="0" max="100" value="80" />
+          </div>
+          <div class="health-bar-container">
+            <div class="health-bar-fill" id="health-bar-fill"></div>
+          </div>
+          <button class="action-btn" id="btn-test-hp">Оновити стан героя</button>
+        </div>
+      </div>
+
+      <!-- Right: Vitest Auto-Grader Results -->
+      <div class="card">
+        <div class="tests-header">
+          <h2>🧪 Результати автотестів</h2>
+          <button class="btn-run-all" id="btn-run-tests">▶ Запустити тести</button>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+          Автоматична перевірка функцій із файлу <code style="color:#fef08a;">src/quest.js</code>:
+        </p>
+        <div id="tests-list"></div>
+      </div>
+    </div>
+
+    <!-- Submit Section (Shows when all tests pass) -->
+    <div class="submit-card" id="submit-card">
+      <h2 style="color: #6ee7b7; font-size: 20px; margin-bottom: 8px;">🎉 Вітаємо! Всі 13 тестів успішно пройдено!</h2>
+      <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 14px;">
+        Ваш бойовий рушій підземелля працює бездоганно. Тепер відправте вашу роботу на перевірку через GitHub:
+      </p>
+
+      <div style="font-size: 13px; color: #94a3b8;">
+        1. Збережіть файл <code>src/quest.js</code> у вашому редакторі (VS Code).<br>
+        2. Запустіть команди у терміналі, щоб відправити зміни:
+      </div>
+
+      <div class="code-box">
+        <button class="btn-copy" id="btn-copy-git">Скопіювати</button>
+        <span id="git-commands">git add src/quest.js && git commit -m "feat: complete dungeon quest" && git push origin main</span>
+      </div>
+
+      <div style="font-size: 13px; color: #94a3b8; margin-top: 10px;">
+        3. Перевірте статус у вкладці <strong>Actions</strong> вашого репозиторію на GitHub — там має загорітися зелена галочка ✅!
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { canOpenChest, calculateDamage, getHeroStatus } from './src/quest.js';
+
+    // UI elements
+    const lockpickSlider = document.getElementById('sim-lockpick');
+    const lockpickVal = document.getElementById('lockpick-val');
+    const trapCheckbox = document.getElementById('sim-trap');
+    const keyCheckbox = document.getElementById('sim-key');
+    const btnTestChest = document.getElementById('btn-test-chest');
+    const resChest = document.getElementById('res-chest');
+
+    const attackInput = document.getElementById('sim-attack');
+    const critCheckbox = document.getElementById('sim-crit');
+    const btnTestDamage = document.getElementById('btn-test-damage');
+    const resDamage = document.getElementById('res-damage');
+    const weaponBtns = document.querySelectorAll('.weapon-btn');
+    let currentWeapon = 'sword';
+
+    const hpSlider = document.getElementById('sim-hp');
+    const hpVal = document.getElementById('hp-val');
+    const healthBarFill = document.getElementById('health-bar-fill');
+    const heroStatusBadge = document.getElementById('hero-status-badge');
+    const btnTestHp = document.getElementById('btn-test-hp');
+
+    const testsList = document.getElementById('tests-list');
+    const progressText = document.getElementById('progress-text');
+    const progressPercent = document.getElementById('progress-percent');
+    const progressBarFill = document.getElementById('progress-bar-fill');
+    const submitCard = document.getElementById('submit-card');
+
+    // Controls
+    lockpickSlider.addEventListener('input', (e) => {
+      lockpickVal.innerText = e.target.value;
+    });
+
+    weaponBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        weaponBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentWeapon = btn.dataset.weapon;
+      });
+    });
+
+    hpSlider.addEventListener('input', (e) => {
+      hpVal.innerText = `${e.target.value} / 100`;
+      healthBarFill.style.width = `${e.target.value}%`;
+      if (e.target.value > 75) {
+        healthBarFill.style.background = '#10b981';
+      } else if (e.target.value >= 25) {
+        healthBarFill.style.background = '#f59e0b';
+      } else {
+        healthBarFill.style.background = '#ef4444';
+      }
+    });
+
+    // Simulators
+    btnTestChest.addEventListener('click', () => {
+      const isTrapped = trapCheckbox.checked;
+      const hasKey = keyCheckbox.checked;
+      const level = parseInt(lockpickSlider.value, 10);
+      try {
+        const canOpen = canOpenChest(hasKey, level, isTrapped);
+        if (canOpen) {
+          resChest.className = 'sim-result pass';
+          resChest.innerHTML = '🟢 <strong>Скриню відкрито!</strong> Скарб отримано.';
+        } else {
+          resChest.className = 'sim-result fail';
+          resChest.innerHTML = '🔴 <strong>Заблоковано!</strong> ' + (!isTrapped ? 'Пастка смертельна!' : 'Потрібен ключ або навичка >= 60');
+        }
+      } catch (err) {
+        resChest.className = 'sim-result fail';
+        resChest.innerText = 'Помилка у функції: ' + err.message;
+      }
+    });
+
+    btnTestDamage.addEventListener('click', () => {
+      const attack = parseFloat(attackInput.value) || 0;
+      const isCrit = critCheckbox.checked;
+      try {
+        const dmg = calculateDamage(attack, currentWeapon, isCrit);
+        resDamage.className = 'sim-result pass';
+        resDamage.innerHTML = `⚔️ Розрахована шкода: <strong>${dmg} HP</strong> ${isCrit ? '(Критичний x2!)' : ''}`;
+      } catch (err) {
+        resDamage.className = 'sim-result fail';
+        resDamage.innerText = 'Помилка у функції: ' + err.message;
+      }
+    });
+
+    btnTestHp.addEventListener('click', () => {
+      const hp = parseInt(hpSlider.value, 10);
+      try {
+        const status = getHeroStatus(hp, 100);
+        heroStatusBadge.innerText = status;
+        if (status === 'Healthy') {
+          heroStatusBadge.style.background = 'rgba(16, 185, 129, 0.2)';
+          heroStatusBadge.style.color = '#6ee7b7';
+        } else if (status === 'Wounded') {
+          heroStatusBadge.style.background = 'rgba(245, 158, 11, 0.2)';
+          heroStatusBadge.style.color = '#fef08a';
+        } else {
+          heroStatusBadge.style.background = 'rgba(239, 68, 68, 0.2)';
+          heroStatusBadge.style.color = '#fca5a5';
+        }
+      } catch (err) {
+        heroStatusBadge.innerText = 'Помилка';
+      }
+    });
+
+    // Auto-test definitions
+    const testCases = [
+      {
+        id: 1,
+        title: 'canOpenChest: блокує, якщо пастка не знешкоджена (!isTrapDisarmed)',
+        run: () => canOpenChest(true, 100, false),
+        expected: false
+      },
+      {
+        id: 2,
+        title: 'canOpenChest: відкриває знешкоджену скриню ключем (hasKey === true)',
+        run: () => canOpenChest(true, 10, true),
+        expected: true
+      },
+      {
+        id: 3,
+        title: 'canOpenChest: відкриває знешкоджену скриню відмичкою (level >= 60)',
+        run: () => canOpenChest(false, 60, true),
+        expected: true
+      },
+      {
+        id: 4,
+        title: 'canOpenChest: забороняє без ключа та з рівнем < 60',
+        run: () => canOpenChest(false, 59, true),
+        expected: false
+      },
+      {
+        id: 5,
+        title: 'calculateDamage: атака мечем (attack * 1.0)',
+        run: () => calculateDamage(50, 'sword', false),
+        expected: 50
+      },
+      {
+        id: 6,
+        title: 'calculateDamage: атака луком (attack * 1.2)',
+        run: () => calculateDamage(50, 'bow', false),
+        expected: 60
+      },
+      {
+        id: 7,
+        title: 'calculateDamage: атака посохом мага (attack * 1.5)',
+        run: () => calculateDamage(40, 'staff', false),
+        expected: 60
+      },
+      {
+        id: 8,
+        title: 'calculateDamage: атака іншою зброєю (attack * 0.5)',
+        run: () => calculateDamage(30, 'fist', false),
+        expected: 15
+      },
+      {
+        id: 9,
+        title: 'calculateDamage: подвоєння при критичному ударі (* 2)',
+        run: () => calculateDamage(50, 'sword', true),
+        expected: 100
+      },
+      {
+        id: 10,
+        title: 'getHeroStatus: повертає "Defeated" при HP <= 0',
+        run: () => getHeroStatus(0, 100),
+        expected: 'Defeated'
+      },
+      {
+        id: 11,
+        title: 'getHeroStatus: повертає "Critical" при HP < 25%',
+        run: () => getHeroStatus(24, 100),
+        expected: 'Critical'
+      },
+      {
+        id: 12,
+        title: 'getHeroStatus: повертає "Wounded" при 25% - 75% HP',
+        run: () => getHeroStatus(50, 100),
+        expected: 'Wounded'
+      },
+      {
+        id: 13,
+        title: 'getHeroStatus: повертає "Healthy" при HP > 75%',
+        run: () => getHeroStatus(80, 100),
+        expected: 'Healthy'
+      }
+    ];
+
+    function runAllTests() {
+      testsList.innerHTML = '';
+      let passedCount = 0;
+
+      testCases.forEach((tc) => {
+        let actual;
+        let isPass = false;
+        let errorMsg = null;
+
+        try {
+          actual = tc.run();
+          isPass = (actual === tc.expected);
+        } catch (e) {
+          errorMsg = e.message;
+        }
+
+        if (isPass) passedCount++;
+
+        const div = document.createElement('div');
+        div.className = `test-item ${isPass ? 'passed' : 'failed'}`;
+        div.innerHTML = `
+          <div class="test-title">
+            <span>${isPass ? '✅' : '❌'}</span>
+            <span>${tc.title}</span>
+          </div>
+          ${!isPass ? `
+            <div class="test-diff">
+              <span class="diff-exp">Очікувалось: ${JSON.stringify(tc.expected)}</span>
+              <span class="diff-rec">Отримано: ${errorMsg ? 'Помилка: ' + errorMsg : JSON.stringify(actual)}</span>
+            </div>
+          ` : ''}
+        `;
+        testsList.appendChild(div);
+      });
+
+      const total = testCases.length;
+      const pct = Math.round((passedCount / total) * 100);
+
+      progressText.innerText = `📊 Автотести: ${passedCount} з ${total} пройдено`;
+      progressPercent.innerText = `${pct}%`;
+      progressBarFill.style.width = `${pct}%`;
+
+      if (passedCount === total) {
+        submitCard.classList.add('visible');
+        progressBarFill.style.background = '#10b981';
+      } else {
+        submitCard.classList.remove('visible');
+        progressBarFill.style.background = 'linear-gradient(90deg, #f59e0b, #10b981)';
+      }
+    }
+
+    document.getElementById('btn-run-tests').addEventListener('click', runAllTests);
+
+    document.getElementById('btn-copy-git').addEventListener('click', () => {
+      const text = document.getElementById('git-commands').innerText;
+      navigator.clipboard.writeText(text);
+      document.getElementById('btn-copy-git').innerText = 'Скопійовано! ✓';
+      setTimeout(() => {
+        document.getElementById('btn-copy-git').innerText = 'Скопіювати';
+      }, 2000);
+    });
+
+    // Run tests and simulators on load
+    btnTestChest.click();
+    btnTestDamage.click();
+    btnTestHp.click();
+    runAllTests();
+  </script>
+</body>
+</html>
